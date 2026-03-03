@@ -5,26 +5,23 @@ todos: []
 isProject: false
 ---
 
-# Cursor 開發計畫：Pharma Radar
+# Cursor 開發計畫：House Edge Sniper
 
-## Phase 1: 基礎建設與爬蟲 (Producers)
+## Phase 1: 節點連線與高速生產者
 
-- [ ] 撰寫 `docker-compose.yml` 啟動單節點 Kafka 與 Zookeeper。
+- 設定本地或私有 RPC 節點連線 (WebSocket)。
+- 監聽特定賭場的 Smart Contract 地址，過濾 `BetPlaced` 或 `RewardClaimed` 事件。
+- 將 Mempool 中的 Pending Transactions 打入 Kafka `mempool-tx-stream` Topic。
 
-- [ ] 開發 Telegram Listener，監聽特定測試頻道，並將原始訊息以 JSON 格式打入 Kafka `raw-telegram-messages` Topic。
+## Phase 2: 期望值計算引擎
 
-- [ ] 實作代理 IP 池機制，確保網頁爬蟲不會輕易被封鎖。
+- 開發 Kafka Consumer 即時讀取串流。
+- 串接 Redis 快取目前的莊家賠率與資金池餘額。
+- 撰寫邏輯：當偵測到勝率期望值 > 1.05 時，觸發 Alert 到 `action-triggers` Topic。
 
-## Phase 2: 串流處理 (Stream Processing)
+## Phase 3: 自動化執行 (MEV)
 
-- [ ] 使用 Python Faust 或 KSQL 建立 Consumer。
+- 訂閱 `action-triggers` Topic。
+- 整合 Flashbots API，建構 Bundle Transaction 確保交易優先被礦工打包。
+- 實作 Gas 費自動競價邏輯。
 
-- [ ] 實作 NLP 正則表達式，從 `raw-telegram-messages` 中萃取出「物品名稱」、「價格」、「幣種」、「地區」。
-
-- [ ] 將清洗後的結構化數據打入 `cleaned-market-data` Topic。
-
-## Phase 3: 儲存與可視化 (Sink)
-
-- [ ] 設定 Kafka Elasticsearch Sink Connector。
-
-- [ ] 在 Kibana 建立 K-Line (K線圖) 來顯示特定物品的價格波動。
