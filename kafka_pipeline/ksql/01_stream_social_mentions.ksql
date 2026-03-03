@@ -1,0 +1,27 @@
+-- Phase 2: 以 social-mentions 為來源，建立 Stream 並解析創作者參照
+-- 執行方式：ksql http://localhost:8088 < 01_stream_social_mentions.ksql
+
+-- 原始 Topic 對應 Stream（若 Topic 已存在會使用既有 schema）
+CREATE STREAM social_mentions_raw (
+    source VARCHAR,
+    id VARCHAR,
+    text VARCHAR,
+    created_at VARCHAR,
+    author_id VARCHAR,
+    author_username VARCHAR,
+    creator_refs ARRAY<VARCHAR>
+) WITH (
+    KAFKA_TOPIC = 'social-mentions',
+    VALUE_FORMAT = 'JSON',
+    TIMESTAMP_PROPERTY = 'created_at'
+);
+
+-- 將每個 creator_ref 展開為一筆紀錄，供後續視窗聚合
+CREATE STREAM social_mentions_by_creator AS
+SELECT
+    source,
+    id,
+    CREATOR_REF AS creator_id,
+    created_at
+FROM social_mentions_raw
+CROSS JOIN UNNEST(creator_refs) AS CREATOR_REF;

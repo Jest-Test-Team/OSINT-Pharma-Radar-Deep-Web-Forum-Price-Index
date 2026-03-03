@@ -87,19 +87,27 @@ class TwitterStreamClient:
         if resp.data is None:
             return
 
-        users = {u["id"]: u for u in (resp.includes.get("users") or [])}
+        users_list = getattr(resp.includes, "users", None) or (resp.includes.get("users") if resp.includes else None) or []
+        users = {}
+        for u in users_list:
+            uid = getattr(u, "id", None) or u.get("id")
+            if uid:
+                users[uid] = u
         for tweet in resp.data:
-            text = tweet.data.get("text", "")
+            data = getattr(tweet, "data", None) or tweet
+            text = data.get("text", "")
             if not _contains_target(text):
                 continue
-            author = users.get(tweet.data.get("author_id"), {})
+            author_id = data.get("author_id")
+            author = users.get(author_id) or {}
+            uname = getattr(author, "username", None) or getattr(getattr(author, "data", None), "username", None) or author.get("username")
             payload = {
                 "source": "twitter",
-                "id": tweet.data.get("id"),
+                "id": data.get("id"),
                 "text": text,
-                "created_at": tweet.data.get("created_at"),
-                "author_id": tweet.data.get("author_id"),
-                "author_username": author.data.get("username") if hasattr(author, "data") else author.get("username"),
+                "created_at": data.get("created_at"),
+                "author_id": author_id,
+                "author_username": uname,
                 "creator_refs": _extract_creator_refs(text),
             }
             yield payload
