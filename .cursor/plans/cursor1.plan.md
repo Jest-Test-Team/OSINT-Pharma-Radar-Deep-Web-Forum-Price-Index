@@ -5,23 +5,34 @@ todos: []
 isProject: false
 ---
 
-# Cursor 開發計畫：Adult-Content Alpha
+# Cursor 開發計畫：House Edge Sniper (Rust/Go/Next)
 
-## Phase 1: 海量社群資料接入
+## Phase 1: Rust 極速基礎建設 (The Engine)
 
-- 註冊 Twitter/X 開發者 API 與 Reddit API。
-- 建立 Kafka Producer，將包含目標創作者 ID 或 OnlyFans 連結的貼文打入 `social-mentions` Topic。
-- 實作 Rate Limit 處理機制，避免 API 帳號被封鎖。
+- [ ] 初始化 Rust 專案，設定 `ethers-rs` 連接本地端或私有 RPC (WebSocket)。
 
-## Phase 2: ksqlDB 實時聚合計算
+- [ ] 撰寫 `mempool_listener.rs` 捕獲特定 DEX Casino 合約的 Pending 交易。
 
-- 啟動 ksqlDB Server。
-- 撰寫 KSQL 語法，建立 1 小時與 24 小時的「滑動窗口 (Sliding Window)」。
-- 即時計算並輸出「今日成長最快 Top 10 創作者」到 `trending-creators` Topic。
+- [ ] 整合 `rdkafka` (Rust Kafka client)，將原始交易資料打入 `mempool-raw` Topic。
 
-## Phase 3: 盜版指紋比對防護
+## Phase 2: Go 串流處理與中樞 (The Brain)
 
-- 建立一個已知受版權保護的影像 pHash 資料庫。
-- 當監聽到論壇有新圖片連結時，自動下載並計算 pHash。
-- 若與資料庫相似度 > 90%，觸發警告並記錄外流網址至 PostgreSQL。
+- [ ] 初始化 Go 專案，建立 Kafka Consumer 群組訂閱 `mempool-raw`。
 
+- [ ] 在 Go 中實作狀態機，緩存莊家資金池的當前水位 (可搭配 Redis)。
+
+- [ ] 建立 WebSocket Server `ws_hub`) 準備推送過濾後的訊號。
+
+## Phase 3: Next.js 實時面板 (The Face)
+
+- [ ] 初始化 Next.js 14 (App Router) 專案。
+
+- [ ] 建立 Dashboard 頁面，連線至 Go 的 WebSocket Server。
+
+- [ ] 實作動態數據表格，高亮顯示當前 EV > 1 的「可狙擊」目標。
+
+## Phase 4: 閉環自動化交易
+
+- [ ] 在 Rust 中實作 `flashbots_relay.rs`。
+
+- [ ] 當 Go 判定風險通過並發送執行指令到 Kafka `execute-trade` Topic 時，Rust 攔截並簽名發送交易。
