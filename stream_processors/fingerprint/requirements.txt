@@ -1,0 +1,7 @@
+# Phase 3: 盜版指紋比對 - pHash 計算與 PostgreSQL 記錄
+kafka-python>=2.0.2
+psycopg2-binary>=2.9.9
+Pillow>=10.0.0
+imagehash>=4.3.1
+requests>=2.31.0
+python-dotenv>=1.0.0
