@@ -5,34 +5,35 @@ todos: []
 isProject: false
 ---
 
-# Cursor 開發計畫：House Edge Sniper (Rust/Go/Next)
+# House Edge Sniper 實作計畫（已實作）
 
-## Phase 1: Rust 極速基礎建設 (The Engine)
+依據專案根目錄 `structure.md` 與 README 之架構，完成以下項目：
 
-- [ ] 初始化 Rust 專案，設定 `ethers-rs` 連接本地端或私有 RPC (WebSocket)。
+## 已完成
 
-- [ ] 撰寫 `mempool_listener.rs` 捕獲特定 DEX Casino 合約的 Pending 交易。
+1. **docker-compose.yml**
+  - 一鍵啟動 Kafka、Zookeeper、Redis（`house-edge-sniper/docker-compose.yml`）
+2. **rust-sniper**（前線監聽與執行）
+  - `Cargo.toml`：依賴 alloy、rdkafka、tokio、reqwest、serde 等  
+  - `src/mempool_listener.rs`：WebSocket 監聽 Ethereum pending tx，機會寫入 Kafka  
+  - `src/ev_calculator.rs`：ArbOpportunity 結構與 EV 計算介面  
+  - `src/flashbots_relay.rs`：MEV bundle 提交 Flashbots Relay  
+  - `src/kafka_producer.rs`：寫入 `house-edge.opportunities`  
+  - `src/main.rs`：組裝並啟動 listener（需 `ETH_WS_URL`、`KAFKA_BROKERS`）  
+  - 編譯需 cmake（或系統 librdkafka）
+3. **go-coordinator**（訊息中樞與 API）
+  - `go.mod`：Gin、kafka-go、redis、gorilla/websocket、zap  
+  - `internal/kafka_consumer`：訂閱 `house-edge.opportunities`，回呼 Handler  
+  - `internal/risk_manager`：餘額/最大回撤檢查，Redis 讀寫  
+  - `internal/ws_hub`：WebSocket Hub 廣播  
+  - `cmd/server/main.go`：Gin HTTP、/ws、/health、/api/risk、POST /api/settings，Kafka 消費後經風控再廣播
+4. **next-dashboard**（戰情面板）
+  - Next.js 14 App Router、TypeScript  
+  - `app/dashboard`：即時機會表、機會數量趨勢圖、WebSocket 連線狀態  
+  - `app/settings`：錢包、最低餘額、最大回撤設定表單  
+  - `components/charts/OpportunityChart.tsx`：簡易長條趨勢圖  
+  - 深色主題、導覽列
 
-- [ ] 整合 `rdkafka` (Rust Kafka client)，將原始交易資料打入 `mempool-raw` Topic。
+## 使用方式
 
-## Phase 2: Go 串流處理與中樞 (The Brain)
-
-- [ ] 初始化 Go 專案，建立 Kafka Consumer 群組訂閱 `mempool-raw`。
-
-- [ ] 在 Go 中實作狀態機，緩存莊家資金池的當前水位 (可搭配 Redis)。
-
-- [ ] 建立 WebSocket Server `ws_hub`) 準備推送過濾後的訊號。
-
-## Phase 3: Next.js 實時面板 (The Face)
-
-- [ ] 初始化 Next.js 14 (App Router) 專案。
-
-- [ ] 建立 Dashboard 頁面，連線至 Go 的 WebSocket Server。
-
-- [ ] 實作動態數據表格，高亮顯示當前 EV > 1 的「可狙擊」目標。
-
-## Phase 4: 閉環自動化交易
-
-- [ ] 在 Rust 中實作 `flashbots_relay.rs`。
-
-- [ ] 當 Go 判定風險通過並發送執行指令到 Kafka `execute-trade` Topic 時，Rust 攔截並簽名發送交易。
+見 `house-edge-sniper/README.md`：先 `docker-compose up -d`，再啟動 go-coordinator 與 next-dashboard；Rust Sniper 可選，需 cmake 或系統 librdkafka。
