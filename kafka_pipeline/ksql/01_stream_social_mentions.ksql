@@ -16,12 +16,11 @@ CREATE STREAM social_mentions_raw (
     TIMESTAMP_PROPERTY = 'created_at'
 );
 
--- 將每個 creator_ref 展開為一筆紀錄，供後續視窗聚合
+-- 將每個 creator_ref 展開為一筆紀錄（ksqlDB 使用 EXPLODE），供後續視窗聚合
 CREATE STREAM social_mentions_by_creator AS
 SELECT
     source,
     id,
-    CREATOR_REF AS creator_id,
+    EXPLODE(creator_refs) AS creator_id,
     created_at
-FROM social_mentions_raw
-CROSS JOIN UNNEST(creator_refs) AS CREATOR_REF;
+FROM social_mentions_raw;
