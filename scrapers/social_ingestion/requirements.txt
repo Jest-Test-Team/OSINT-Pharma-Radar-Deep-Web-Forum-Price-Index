@@ -1,0 +1,10 @@
+# Phase 1: Social data ingestion - Twitter/X, Reddit → Kafka
+kafka-python>=2.0.2
+requests>=2.31.0
+python-dotenv>=1.0.0
+# Twitter/X API v2 (Bearer token / OAuth 2.0)
+tweepy>=4.14.0
+# Reddit API
+praw>=7.7.1
+# Rate limiting
+tenacity>=8.2.3
